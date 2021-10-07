@@ -5,7 +5,7 @@
 #define SPEED_LOW .5
 
 void updates(Robot *robot) {
-  // Variable Names
+  // Variable 'Names'
   int power, turn, arm_power;
 
   // Initializing the robot only if it has not yet been initialized
@@ -52,7 +52,7 @@ void updates(Robot *robot) {
   robot->left_motor->speed =  robot->wheel_scale * (power + turn);
   robot->right_motor->speed = robot->wheel_scale * -(power - turn);
 
-  if (robot->arm_switch.isOn)
+  if (robot->arm_switch.isOn && arm_power < 0)
     robot->arm_motor->speed = 0;
   else
     robot->arm_motor->speed = arm_power;

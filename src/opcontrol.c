@@ -11,8 +11,6 @@
 #include "robot.h"
 #include "run.h"
 #include "updates.h"
-#include <stdlib.h>
-#include <stdbool.h>
 #include "debug.h"
 /*
  * Runs the user operator control code. This function will be started in its own task with the
@@ -39,16 +37,16 @@ void operatorControl() {
   main_bot.is_initialized = false;
 
   // Values to keep track of loop time
-  int time = 0, prev_time = 0;
+  int time = 0, target_time = 0;
+
 
   while (1) {
+    // Runs the debug code if the button to change it is pressed
     time = millis();
 
-    // This loop runs every 2 milliseconds; if it misses a loop, it will iterate until caught up
-    if (time >= prev_time)
+    if (time >= target_time)
     {
-      // Runs the debug code if the button to change it is pressed
-      if (main_bot.debug_on)
+      if (main_bot.debug_on && main_bot.is_initialized)
       {
         debug(&main_bot);
       }
@@ -58,8 +56,8 @@ void operatorControl() {
         updates(&main_bot);
         run(&main_bot);
       }
-
-      prev_time += 2;
+      time += 2;
     }
+
   }
 }

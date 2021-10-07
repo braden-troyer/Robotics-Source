@@ -1,4 +1,5 @@
 #include "robot.h"
+#include <stdlib.h>
 
 Motor *initializeMotor(int channel)
 {

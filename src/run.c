@@ -1,4 +1,5 @@
 #include "run.h"
+#include "main.h"
 
 void run(Robot *robot) {
 
@@ -6,4 +7,5 @@ void run(Robot *robot) {
   // operations found in updates()
   motorSet(robot->left_motor->channel, robot->left_motor->speed);
   motorSet(robot->right_motor->channel, robot->right_motor->speed);
+  motorSet(robot->arm_motor->channel, robot->arm_motor->speed);
 }
