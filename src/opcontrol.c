@@ -11,30 +11,14 @@
 #include "robot.h"
 #include "run.h"
 #include "updates.h"
-#include "debug.h"
-/*
- * Runs the user operator control code. This function will be started in its own task with the
- * default priority and stack size whenever the robot is enabled via the Field Management System
- * or the VEX Competition Switch in the operator control mode. If the robot is disabled or
- * communications is lost, the operator control task will be stopped by the kernel. Re-enabling
- * the robot will restart the task, not resume it from where it left off.
- *
- * If no VEX Competition Switch or Field Management system is plugged in, the VEX Cortex will
- * run the operator control task. Be warned that this will also occur if the VEX Cortex is
- * tethered directly to a computer via the USB A to A cable without any VEX Joystick attached.
- *
- * Code running in this task can take almost any action, as the VEX Joystick is available and
- * the scheduler is operational. However, proper use of delay() or taskDelayUntil() is highly
- * recommended to give other tasks (including system tasks such as updating LCDs) time to run.
- *
- * This task should never exit; it should end with some kind of infinite loop, even if empty.
- */
+#include "macros.h"
+
+
 
 void operatorControl() {
 
   // Initializer of the main robot data set
-  Robot main_bot;
-  main_bot.is_initialized = false;
+  Robot *main_bot = initializeRobot();
 
   // Values to keep track of loop time
   int time = 0, target_time = 0;
@@ -43,20 +27,13 @@ void operatorControl() {
   while (1) {
     // Runs the debug code if the button to change it is pressed
     time = millis();
-
     if (time >= target_time)
     {
-      if (main_bot.debug_on && main_bot.is_initialized)
-      {
-        debug(&main_bot);
-      }
-      else
-      {
-        // Inner loop simply calls updates and run, other functions may be added later
-        updates(&main_bot);
-        run(&main_bot);
-      }
-      time += 2;
+      // Simply calls updates and run, other functions may be added later
+      updates(main_bot);
+      run(main_bot);
+
+      target_time += LOOP_TIME_MILLIS;
     }
 
   }

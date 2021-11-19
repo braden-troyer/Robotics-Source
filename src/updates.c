@@ -1,44 +1,24 @@
 #include "updates.h"
+#include "macros.h"
+#include <math.h>
 
-#define JOYSTICK 1
-#define SPEED_HIGH 1
-#define SPEED_LOW .5
 
 void updates(Robot *robot) {
   // Variable 'Names'
-  int power, turn, arm_power;
-
-  // Initializing the robot only if it has not yet been initialized
-  if (!(robot->is_initialized))
-  {
-    // Pointing to the memory allocated and initialized
-    robot->left_motor = initializeMotor(2);
-    robot->right_motor = initializeMotor(3);
-    robot->arm_motor = initializeMotor(4);
-
-    robot->scale_down = initializeButton(JOYSTICK, 8, JOY_LEFT);
-    robot->scale_up = initializeButton(JOYSTICK, 8, JOY_RIGHT);
-    robot->debug_button = initializeButton(JOYSTICK, 7, JOY_UP);
-
-
-    robot->wheel_scale = 1.0;
-
-    robot->is_initialized = true;
-    robot->debug_on = false;
-  }
+  int power, turn, arm_power, claw_pos;
 
 
 // Button Checking Section
   // Setting a multiplier on the amount of wheel power
-  if (checkButton(robot->scale_down) && robot->wheel_scale > SPEED_LOW)
-    robot->wheel_scale -= .1;
+  if (checkButton(robot->scale_down, 0) && robot->wheel_scale > SPEED_LOW)
+    robot->wheel_scale -= SPEED_SHIFT;
 
-  if (checkButton(robot->scale_up) && robot->wheel_scale < SPEED_HIGH)
-    robot->wheel_scale += .1;
+  if (checkButton(robot->scale_up, 0) && robot->wheel_scale < SPEED_HIGH)
+    robot->wheel_scale += SPEED_SHIFT;
 
-  // Change to debug mode
-  if (checkButton(robot->debug_button))
-    robot->debug_on = !robot->debug_on;
+  if (checkButton(robot->alternate_button, 0))
+    robot->wheel_scale *= -1;
+
 
 
   robot->arm_switch.isOn = digitalRead(3);
@@ -47,13 +27,55 @@ void updates(Robot *robot) {
   // Joystick Checking Section
   power = joystickGetAnalog(JOYSTICK, 3);
   turn = joystickGetAnalog(JOYSTICK, 4);
-  arm_power = joystickGetAnalog(JOYSTICK, 1);
+  arm_power = joystickGetAnalog(JOYSTICK, 2);
 
-  robot->left_motor->speed =  robot->wheel_scale * (power + turn);
-  robot->right_motor->speed = robot->wheel_scale * -(power - turn);
+  /*
+  if (joystickGetDigital(JOYSTICK, 6, JOY_UP) && robot->claw_servo[0]->speed < 127) {
+    robot->claw_servo[0]->speed++;
+    robot->claw_servo[1]->speed = -robot->claw_servo[0]->speed;
+  }
+  if (joystickGetDigital(JOYSTICK, 6, JOY_DOWN) && robot->claw_servo[0]->speed > -127) {
+    robot->claw_servo[0]->speed--;
+    robot->claw_servo[1]->speed = -robot->claw_servo[0]->speed;
+  }
 
-  if (robot->arm_switch.isOn && arm_power < 0)
-    robot->arm_motor->speed = 0;
-  else
-    robot->arm_motor->speed = arm_power;
+  if (joystickGetDigital(JOYSTICK, 5, JOY_UP) && robot->claw_servo[1]->speed < 127) {
+    robot->claw_servo[1]->speed++;
+  }
+  if (joystickGetDigital(JOYSTICK, 5, JOY_DOWN) && robot->claw_servo[1]->speed > -127) {
+    robot->claw_servo[1]->speed--;
+  }
+  */
+
+  if (checkButton(robot->forward_button, 1)) {
+
+    robot->left_motor->speed = PRECISION_SPEED;
+    robot->right_motor->speed = -PRECISION_SPEED;
+
+  } else if (checkButton(robot->backward_button, 1)) {
+
+    robot->left_motor->speed =  -PRECISION_SPEED;
+    robot->right_motor->speed = PRECISION_SPEED;
+
+  } else if (checkButton(robot->left_turn, 1)) {
+
+    robot->left_motor->speed = -PRECISION_SPEED / 2;
+    robot->right_motor->speed = -PRECISION_SPEED / 2;
+
+  } else if (checkButton(robot->right_turn, 1)) {
+
+    robot->left_motor->speed = PRECISION_SPEED / 2;
+    robot->right_motor->speed = PRECISION_SPEED / 2;
+
+  } else if (robot->wheel_scale < 0) {
+    robot->left_motor->speed = robot->wheel_scale * (power + turn);
+    robot->right_motor->speed = robot->wheel_scale * -(power - turn);
+  } else {
+
+    robot->left_motor->speed = robot->wheel_scale * (power + turn);
+    robot->right_motor->speed = robot->wheel_scale * -(power - turn);
+
+  }
+
+  robot->arm_motor->speed = fabs(robot->wheel_scale) * arm_power;
 }

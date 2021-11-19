@@ -3,7 +3,7 @@
 
 #include "robot.h"
 
-// The meat of the program that actually makes the robot run
+// The function of the program that actually makes the robot run
 void run(Robot *robot);
 
 #endif

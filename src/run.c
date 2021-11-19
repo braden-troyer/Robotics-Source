@@ -8,4 +8,6 @@ void run(Robot *robot) {
   motorSet(robot->left_motor->channel, robot->left_motor->speed);
   motorSet(robot->right_motor->channel, robot->right_motor->speed);
   motorSet(robot->arm_motor->channel, robot->arm_motor->speed);
+  motorSet(robot->claw_servo[0]->channel, robot->claw_servo[0]->speed);
+  motorSet(robot->claw_servo[1]->channel, robot->claw_servo[1]->speed);
 }
